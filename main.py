@@ -6,23 +6,29 @@ class Field:
     def __init__(self, value):
         if not self.is_valid(value):
             raise ValueError(f"Invalid value: {value}")
-        self._value = value
+        self.__value = value
 
     @property
     def value(self):
-        return self._value
+        return self.__value
 
     @value.setter
     def value(self, new_value):
         if not self.is_valid(new_value):
             raise ValueError(f"Invalid value: {new_value}")
-        self._value = new_value
+        self.__value = new_value
 
     def is_valid(self, new_value):
         return True
 
+    def __eq__(self, other):
+        return self.__value == other
+
+    def __ne__(self, other):
+        return self.__value == other
+
     def __str__(self):
-        return str(self._value)
+        return str(self.__value)
 
 
 class Name(Field):
@@ -50,14 +56,14 @@ class Birthday(Field):
             raise ValueError('Invalid birthday format. Right birthday like this 28.12.1994')
         else:
             return True
-            # self._value = new_birthday
 
 
 class Record:
-    def __init__(self, name):
+    def __init__(self, name, birthday=None):
         self.name = Name(name)
         self.phones = []
-        self.birthday = None
+        if birthday:
+            self.birthday = Birthday(birthday)
 
     def add_phone(self, phone):
         if phone not in self._get_phones_list():
@@ -65,14 +71,11 @@ class Record:
             self.phones.append(new_phone)
 
     def remove_phone(self, phone):
-        for p in self.phones:
-            if p.value == phone:
-                self.phones.remove(p)
+        if phone not in self._get_phones_list():
+            raise ValueError("Phone number not found")
+        self.phones.remove(phone)
 
     def edit_phone(self, old_phone, new_phone):
-        if old_phone not in self._get_phones_list():
-            raise ValueError("Phone number not found")
-
         self.remove_phone(old_phone)
         self.add_phone(new_phone)
 
@@ -113,7 +116,7 @@ class AddressBook(UserDict):
     def iterator(self, n=2):
         start = 0
         end = n
-        while True:
+        while start < len(self.data):
             yield {name: self.data[name] for name in list(self.data)[start:end]}
             start += n
             end += n
@@ -124,7 +127,7 @@ def main():
     book = AddressBook()
 
     # Створення запису для John
-    john_record = Record("John")
+    john_record = Record("John", "19.10.2004")
     john_record.add_phone("1234567890")
     john_record.add_phone("5555555555")
     # john_record.add_phone("77777777777")  # не валідний номер телефону
